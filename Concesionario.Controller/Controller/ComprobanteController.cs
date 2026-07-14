@@ -1,66 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using ConcesionarioWEBFORM1111.DataBase.DAO;
 using ConcesionarioWEBFORM1111.Model;
-using ConcesionarioWEBFORM1111.DataBase;
-using System.ComponentModel;
 
 namespace ConcesionarioWEBFORM1111.Controller
 {
     public class ComprobanteController
     {
-        private readonly DataBaseConnection dbConnection;
+        private readonly IComprobanteDAO comprobanteDao;
 
-        public ComprobanteController()
+        public ComprobanteController(IComprobanteDAO comprobanteDao)
         {
-            dbConnection = new DataBaseConnection();
+            this.comprobanteDao = comprobanteDao;
         }
 
-        // Método para obtener todos los comprobantes
-        public List<Comprobante> ObtenerTodosLosComprobantes()
+        public async Task<List<Comprobante>> ObtenerTodosLosComprobantesAsync()
         {
-            List<Comprobante> comprobantes = new List<Comprobante>();
-            using (SqlConnection connection = new SqlConnection(dbConnection.connectionString))
-            {
-                try
-                {
-                    connection.Open();
-
-                    string query = "SELECT * FROM Comprobante ORDER BY FechaHora DESC";
-                    
-                    SqlCommand command = new SqlCommand(query, connection);
-                    SqlDataReader reader = command.ExecuteReader();
-
-                    while (reader.Read())
-                    {
-                        comprobantes.Add(MapearComprobante(reader));
-                    }
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine($"Error al obtener todos los comprobantes: {ex.Message}");
-                }
-            }
-
-            return comprobantes;
-        }
-
-
-
-        // Funcion-Metodo para usar en ObtenerTodosLosComprobantes
-        private Comprobante MapearComprobante(SqlDataReader reader)
-        {
-            return new Comprobante
-            {
-                ID_comprobante = reader.GetInt32(0),
-                Tipo = reader.GetString(1),
-                FechaHora = reader.GetDateTime(2),
-                ID_auto = reader.GetInt32(3),
-                ID_empleado = reader.GetInt32(4),
-                Estado = reader.IsDBNull(5) ? null : reader.GetString(5),
-                Observaciones = reader.IsDBNull(6) ? null : reader.GetString(6),
-                Precio = reader.GetDecimal(7)
-            };
+            return await comprobanteDao.ObtenerTodosLosComprobantesAsync();
         }
     }
 }
+

@@ -1,57 +1,181 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site1.Master.cs" Inherits="ConcesionarioWEBFORM1111.Site1" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site1.Master.cs" Inherits="ConcesionarioWEBFORM1111.Site1" %>
 
 <!DOCTYPE html>
 <html lang="es">
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Concesionario Web</title>
+    <title>Concesionario | Panel de Gesti&oacute;n</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="~/CSS/main.css" rel="stylesheet" type="text/css" runat="server" />
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Smooth scrolling and native-feeling scrollbar */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* GridView overrides for high contrast and grid lines */
+        .gridview-modern {
+            border-collapse: collapse !important;
+            width: 100%;
+        }
+        .gridview-modern th {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #94a3b8 !important; /* Visible borders */
+            background-color: #e2e8f0 !important; /* Darker header */
+            color: #1e293b !important;
+            font-weight: bold !important;
+        }
+        .gridview-modern td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            border: 1px solid #cbd5e1 !important; /* Visible column and row borders */
+        }
+        .gridview-modern tr:nth-child(even) td {
+            background-color: #f1f5f9 !important; /* Stronger zebra striping */
+        }
+
+        /* Modern Input styles - High Contrast */
+        .input-modern {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.875rem;
+            border: 2px solid #94a3b8 !important; /* Thicker, much darker border */
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            color: #0f172a; 
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05); /* Inner shadow to look like a field */
+        }
+        .input-modern:focus {
+            border-color: #f59e0b !important; /* Amber focus */
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+        }
+        .input-modern::placeholder {
+            color: #64748b; /* Darker placeholder */
+        }
+
+        /* Modern Buttons (Midnight Blue & Amber Theme) */
+        .btn-primary-modern {
+            background-color: #f59e0b; /* amber-500 */
+            color: #0f172a; /* slate-900 */
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2), 0 2px 4px -1px rgba(245, 158, 11, 0.1);
+        }
+        .btn-primary-modern:hover {
+            background-color: #fbbf24; /* amber-400 */
+            transform: translateY(-1px);
+        }
+        .btn-secondary-modern {
+            background-color: #ffffff;
+            color: #334155;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .btn-secondary-modern:hover {
+            background-color: #f8fafc;
+        }
+    </style>
 
     <asp:ContentPlaceHolder ID="head" runat="server" />
 </head>
-<body>
-    <form id="form1" runat="server" style="width:100%; min-height:100vh; display:flex; flex-direction:column;">
-        <!-- Navbar responsive tipo hamburguesa -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/view/Home.aspx">Concesionario</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="/view/Home.aspx">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="/view/Auto.aspx">Autos</a></li>
-                <li class="nav-item"><a class="nav-link" href="/view/Servicios.aspx">Servicios</a></li>
-                <li class="nav-item"><a class="nav-link" href="/view/Comprobantes.aspx">Comprobantes</a></li>
-                <% if (Session["usuario"] != null) { %>
-                    <li class="nav-item"><a class="nav-link" href="/view/Logout.aspx">Cerrar Sesión</a></li>
-                <% } else { %>
-                    <li class="nav-item"><a class="nav-link" href="/view/Login.aspx">Login</a></li>
-                <% } %>
-            </ul>
-        </div>
-    </div>
-</nav>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+    
+    <form id="form1" runat="server" class="flex flex-col flex-grow">
+        
+        <!-- Clean, Modern Top Navbar (Midnight Blue) -->
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    
+                    <!-- Left side: Logo & Navigation -->
+                    <div class="flex items-center space-x-8">
+                        <a href="/View/Home.aspx" class="flex items-center gap-2 group text-decoration-none">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-900 flex items-center justify-center font-bold text-lg shadow-sm">
+                                C
+                            </div>
+                            <span class="text-lg font-bold text-white tracking-tight">Concesionario</span>
+                        </a>
 
+                        <nav class="hidden md:flex space-x-6">
+                            <a href="/View/Home.aspx" class="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors">Inicio</a>
+                            <a href="/View/Auto.aspx" class="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors">Autos</a>
+                            <a href="/View/Servicios.aspx" class="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors">Servicios</a>
+                            <a href="/View/Comprobantes.aspx" class="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors">Comprobantes</a>
+                            <% if (Session["usuario"] != null && ((ConcesionarioWEBFORM1111.Model.Empleados)Session["usuario"]).Puesto.ToLower() == "gerente") { %>
+                                <a href="/View/Empleados.aspx" class="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors">Empleados</a>
+                            <% } %>
+                        </nav>
+                    </div>
 
-        <!-- Contenido principal -->
-        <main class="container my-4" style="flex: 1 1 auto; display: flex; flex-direction: column;">
+                    <!-- Right side: User & Actions -->
+                    <div class="flex items-center">
+                        <% if (Session["usuario"] != null) { %>
+                            <div class="flex items-center gap-4">
+                                <div class="hidden sm:flex flex-col text-right">
+                                    <span class="text-sm font-semibold text-white leading-tight"><%= ((ConcesionarioWEBFORM1111.Model.Empleados)Session["usuario"]).Nombre %></span>
+                                    <span class="text-xs text-amber-400 leading-tight"><%= ((ConcesionarioWEBFORM1111.Model.Empleados)Session["usuario"]).Puesto %></span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-sm">
+                                    <%= ((ConcesionarioWEBFORM1111.Model.Empleados)Session["usuario"]).Nombre.Substring(0,1) %>
+                                </div>
+                                <div class="h-6 w-px bg-slate-700 mx-2"></div>
+                                <a href="/View/Logout.aspx" class="text-sm font-medium text-slate-400 hover:text-rose-400 transition-colors" title="Cerrar Sesi&oacute;n">
+                                    Salir
+                                </a>
+                            </div>
+                        <% } else { %>
+                            <a href="/View/Login.aspx" class="btn-primary-modern text-decoration-none shadow-sm">Ingresar al Sistema</a>
+                        <% } %>
+                    </div>
+
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <asp:ContentPlaceHolder ID="MainContent" runat="server" />
         </main>
 
         <!-- Footer -->
-        <footer class="site-footer bg-dark text-white text-center py-3">
-            <p class="mb-0">&copy; 2025 - Concesionario Web</p>
+        <footer class="mt-auto py-6 border-t border-slate-200 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <p class="text-sm text-slate-500 font-medium">&copy; 2026 - Concesionaria</p>
+                <div class="text-sm text-slate-400">Plataforma de Gesti&oacute;n</div>
+            </div>
         </footer>
     </form>
-
-    <!-- Bootstrap JS desde CDN (para el menú hamburguesa) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

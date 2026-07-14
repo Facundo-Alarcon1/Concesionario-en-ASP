@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <generado automáticamente>
 //     Este código fue generado por una herramienta.
 //
@@ -58,6 +58,15 @@ namespace ConcesionarioWEBFORM1111
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlAgregarAuto;
+
+        /// <summary>
+        /// Control hfAutoId.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfAutoId;
 
         /// <summary>
         /// Control txtMarca.
@@ -150,3 +159,4 @@ namespace ConcesionarioWEBFORM1111
         protected global::System.Web.UI.WebControls.Label lblGridMensaje;
     }
 }
+

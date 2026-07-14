@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // <generado automáticamente>
 //     Este código fue generado por una herramienta.
 //
@@ -24,13 +24,13 @@ namespace ConcesionarioWEBFORM1111
         protected global::System.Web.UI.WebControls.TextBox txtDescripcion;
 
         /// <summary>
-        /// Control calFecha.
+        /// Control txtFecha.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Calendar calFecha;
+        protected global::System.Web.UI.WebControls.TextBox txtFecha;
 
         /// <summary>
         /// Control ddlEmpleados.
@@ -69,3 +69,4 @@ namespace ConcesionarioWEBFORM1111
         protected global::System.Web.UI.WebControls.GridView gvServicios;
     }
 }
+

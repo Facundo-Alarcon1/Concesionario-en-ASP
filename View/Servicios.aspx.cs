@@ -1,104 +1,127 @@
-﻿using System;
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Threading.Tasks;
 using ConcesionarioWEBFORM1111.Controller;
+using ConcesionarioWEBFORM1111.DataBase;
+using ConcesionarioWEBFORM1111.DataBase.DAO;
 using ConcesionarioWEBFORM1111.Model;
 
 namespace ConcesionarioWEBFORM1111
 {
     public partial class Servicios : Page
     {
-        private ServicioController servicioController = new ServicioController();
-        private LoginController loginController = new LoginController();
+        private ServicioController servicioController;
+        private EmpleadoController empleadoController;
 
-        protected void Page_Load(object sender, EventArgs e)
+        protected void Page_Init(object sender, EventArgs e)
+        {
+            var db = new DataBaseConnection();
+            servicioController = new ServicioController(new ServicioDAO(db));
+            empleadoController = new EmpleadoController(new EmpleadoDAO(db));
+        }
+
+        protected async void Page_Load(object sender, EventArgs e)
         {
             if (Session["usuario"] == null)
             {
-                Response.Redirect("Login.aspx");
+                Response.Redirect("Login.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
                 return;
             }
 
             if (!IsPostBack)
             {
-                CargarEmpleados();
-                CargarServicios();
-                lblMensaje.Text = ""; // ocultar mensaje al cargar
+                await CargarEmpleadosAsync();
+                await CargarServiciosAsync();
+                lblMensaje.Text = ""; 
+                txtFecha.Text = DateTime.Today.ToString("yyyy-MM-dd"); // Fecha por defecto
             }
         }
 
-        private void CargarEmpleados()
+        private async Task CargarEmpleadosAsync()
         {
-            var empleados = loginController.ObtenerTodosLosEmpleados();
+            var empleados = await empleadoController.ObtenerEmpleadosAsync();
             ddlEmpleados.DataSource = empleados;
-            ddlEmpleados.DataTextField = "NombreCompleto"; // ahora viene desde la propiedad
+            ddlEmpleados.DataTextField = "Nombre"; // 'Nombre' exists in Empleados model, I'll use it
             ddlEmpleados.DataValueField = "ID_empleado";
             ddlEmpleados.DataBind();
             ddlEmpleados.Items.Insert(0, new System.Web.UI.WebControls.ListItem("Seleccione un empleado...", ""));
         }
 
-        private void CargarServicios()
+        private async Task CargarServiciosAsync()
         {
-            var lista = servicioController.ObtenerTodosLosServicios(); 
+            var lista = await servicioController.ObtenerTodosLosServiciosAsync(); 
             lista.Sort((a, b) => b.Fecha.CompareTo(a.Fecha));
 
             gvServicios.DataSource = lista;
             gvServicios.DataBind();
         }
 
-        protected void btnAgregar_Click(object sender, EventArgs e)
+        private void MostrarMensaje(string mensaje, bool esExito)
         {
-            lblMensaje.ForeColor = System.Drawing.Color.Red;
+            lblMensaje.Text = mensaje;
+            lblMensaje.ForeColor = esExito ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+        }
 
-            if (string.IsNullOrEmpty(txtDescripcion.Text))
+        protected async void btnAgregar_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtDescripcion.Text))
             {
-                lblMensaje.Text = "Ingrese una descripción del servicio.";
+                MostrarMensaje("La descripción es obligatoria.", false);
+                return;
+            }
+
+            if (!DateTime.TryParse(txtFecha.Text, out DateTime fecha))
+            {
+                MostrarMensaje("Fecha inválida.", false);
                 return;
             }
 
             if (string.IsNullOrEmpty(ddlEmpleados.SelectedValue))
             {
-                lblMensaje.Text = "Seleccione un empleado antes de agregar.";
+                MostrarMensaje("Debe seleccionar un mecánico.", false);
                 return;
             }
 
-            Servicio nuevo = new Servicio
+            var servicio = new ConcesionarioWEBFORM1111.Model.Servicio
             {
                 Descripcion = txtDescripcion.Text.Trim(),
-                Fecha = calFecha.SelectedDate != DateTime.MinValue ? calFecha.SelectedDate : DateTime.Today,
-                Estado = "En proceso",
+                Fecha = fecha,
                 ID_empleado = int.Parse(ddlEmpleados.SelectedValue)
             };
 
-            if (servicioController.AgregarServicio(nuevo))
+            bool exito = await servicioController.AgregarServicioAsync(servicio);
+            
+            if (exito)
             {
-                CargarServicios();
-                txtDescripcion.Text = "";
+                MostrarMensaje("Servicio agendado correctamente.", true);
+                await CargarServiciosAsync();
+                txtDescripcion.Text = string.Empty;
+                txtFecha.Text = DateTime.Today.ToString("yyyy-MM-dd");
                 ddlEmpleados.SelectedIndex = 0;
-                lblMensaje.ForeColor = System.Drawing.Color.Green;
-                lblMensaje.Text = "✅ Servicio agregado correctamente.";
             }
             else
             {
-                lblMensaje.Text = "❌ Error al agregar el servicio.";
+                MostrarMensaje("Error al agendar el servicio.", false);
             }
         }
 
-        protected void gvServicios_RowCommand(object sender, GridViewCommandEventArgs e)
+        protected async void gvServicios_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             int index = Convert.ToInt32(e.CommandArgument);
             int idServicio = Convert.ToInt32(gvServicios.DataKeys[index].Value);
 
             if (e.CommandName == "Realizado")
             {
-                servicioController.MarcarComoRealizado(idServicio);
+                await servicioController.MarcarComoRealizadoAsync(idServicio);
             }
             else if (e.CommandName == "Eliminar")
             {
-                servicioController.EliminarServicio(idServicio);
+                await servicioController.EliminarServicioAsync(idServicio);
             }
 
-            CargarServicios();
+            await CargarServiciosAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace ConcesionarioWEBFORM1111
 {
@@ -10,7 +10,9 @@ namespace ConcesionarioWEBFORM1111
             Session.Abandon();
 
             // Redirigir a la página de login
-            Response.Redirect("Login.aspx");
+            Response.Redirect("Login.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }
+

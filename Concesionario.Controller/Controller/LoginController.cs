@@ -1,89 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using ConcesionarioWEBFORM1111.DataBase;
+using System;
+using System.Threading.Tasks;
+using ConcesionarioWEBFORM1111.DataBase.DAO;
 using ConcesionarioWEBFORM1111.Model;
 
 namespace ConcesionarioWEBFORM1111.Controller
 {
     public class LoginController
     {
-        private readonly DataBaseConnection dbConnection;
+        private readonly ILoginDAO loginDao;
 
-        public LoginController()
+        public LoginController(ILoginDAO loginDao)
         {
-            dbConnection = new DataBaseConnection();
+            this.loginDao = loginDao;
         }
 
-        public (string Puesto, int IdEmpleado, string NombreUsuario, string Contraseña) ValidarCredenciales(string nombreUsuario, string contraseña)
+        public async Task<(string Puesto, int IdEmpleado, string NombreUsuario, string Contrasenia)> ValidarCredencialesAsync(string nombreUsuario, string contraseniaIngresada)
         {
-            using (SqlConnection connection = new SqlConnection(dbConnection.connectionString))
-            {
-                connection.Open();
-                string query = "SELECT Puesto, ID_empleado, NombreUsuario, Contraseña FROM Empleados WHERE NombreUsuario = @NombreUsuario AND Contraseña = @Contraseña";
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@NombreUsuario", nombreUsuario);
-                command.Parameters.AddWithValue("@Contraseña", contraseña);
+            var usuario = await loginDao.ObtenerUsuarioPorNombreAsync(nombreUsuario);
 
-                using (SqlDataReader reader = command.ExecuteReader())
+            if (usuario.NombreUsuario != null)
+            {
+                // Verifica el hash, o permite texto plano si el usuario lo insertó manualmente en la base de datos para pruebas
+                if (SecurityHelper.VerifyPassword(contraseniaIngresada, usuario.ContraseniaHash) || contraseniaIngresada == usuario.ContraseniaHash)
                 {
-                    if (reader.Read())
-                    {
-                        return (
-                            reader["Puesto"].ToString(),
-                            Convert.ToInt32(reader["ID_empleado"]),
-                            reader["NombreUsuario"].ToString(),
-                            reader["Contraseña"].ToString()
-                        );
-                    }
+                    return (usuario.Puesto, usuario.IdEmpleado, usuario.NombreUsuario, usuario.ContraseniaHash);
                 }
             }
 
             return (null, 0, null, null);
         }
 
-        public bool PuedeVenderAutos(string nombreUsuario, string contraseña)
+        public async Task<bool> PuedeVenderAutosAsync(string nombreUsuario, string contrasenia)
         {
-            var (puesto, _, _, _) = ValidarCredenciales(nombreUsuario, contraseña);
+            var (puesto, _, _, _) = await ValidarCredencialesAsync(nombreUsuario, contrasenia);
             return puesto == "Empleado" || puesto == "Gerente";
         }
 
-        public bool PuedeAgregarAutos(string nombreUsuario, string contraseña)
+        public async Task<bool> PuedeAgregarAutosAsync(string nombreUsuario, string contrasenia)
         {
-            var (puesto, _, _, _) = ValidarCredenciales(nombreUsuario, contraseña);
+            var (puesto, _, _, _) = await ValidarCredencialesAsync(nombreUsuario, contrasenia);
             return puesto == "Gerente";
-        }
-
-        public List<Empleados> ObtenerTodosLosEmpleados()
-        {
-            var empleados = new List<Empleados>();
-            using (SqlConnection connection = new SqlConnection(dbConnection.connectionString))
-            {
-                try
-                {
-                    connection.Open();
-                    string query = "SELECT ID_empleado, Nombre, Apellido FROM Empleados";
-                    SqlCommand command = new SqlCommand(query, connection);
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            empleados.Add(new Empleados
-                            {
-                                ID_empleado = reader.GetInt32(0),
-                                Nombre = reader.GetString(1),
-                                Apellido = reader.GetString(2)
-                            });
-                        }
-                    }
-                }
-                catch (SqlException ex)
-                {
-                    Console.WriteLine($"Error al obtener empleados: {ex.Message}");
-                }
-            }
-            return empleados;
         }
     }
 }
+
